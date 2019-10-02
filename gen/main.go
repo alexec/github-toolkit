@@ -29,6 +29,7 @@ var rootCmd = &cobra.Command{
 		issues, _, err := client.Issues.ListByRepo(ctx, owner, repo, &github.IssueListByRepoOptions{
 			State:  "open",
 			Labels: labels,
+			Sort:   "comments",
 			ListOptions: github.ListOptions{
 				PerPage: 100,
 			},
