@@ -34,7 +34,6 @@ var rootCmd = &cobra.Command{
 			},
 		})
 		check(err)
-
 		fmt.Printf(`<!doctype html>
 <html lang="en">
   <head>
@@ -86,7 +85,7 @@ var rootCmd = &cobra.Command{
 
 			fmt.Printf(`<div class="card">
   <div class="card-body">
-    <h5 class="card-title">%s</h5></h5>
+    <h5 class="card-title">%s</h5>
     <h6 class="card-subtitle mb-2">%s</h6>
     <h6 class="card-subtitle mb-2 text-muted">#%v opened on %v by %v</h6>
     <p class="card-text">%s %s</p>
@@ -104,6 +103,10 @@ var rootCmd = &cobra.Command{
 		fmt.Println(`  </div></div>
 </body>
 </html>`)
+
+		if len(issues) >= 100 {
+			panic("100 or more issues, we do not support pagination, so we do not support this number of issues")
+		}
 	},
 }
 
