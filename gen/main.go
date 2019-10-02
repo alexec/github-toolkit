@@ -82,7 +82,7 @@ var rootCmd = &cobra.Command{
 				i.GetTitle(),
 				labels,
 				i.GetNumber(),
-				fmt.Sprintf("%s %v", i.GetCreatedAt().Month(), i.GetCreatedAt().Day()),
+				i.GetCreatedAt().Format("2 Jan") ,
 				i.GetUser().GetLogin(),
 				reactions,
 				comments,
@@ -98,7 +98,7 @@ func init() {
 	rootCmd.Flags().StringVar(&accessToken, "access-token", os.Getenv("ACCESS_TOKEN"), "Github personal access token")
 	rootCmd.Flags().StringVar(&owner, "owner", "", "Github owner (aka org)")
 	rootCmd.Flags().StringVar(&repo, "repo", "", "Github repo")
-	rootCmd.Flags().StringArrayVar(&labels, "labels", []string{"enhancement"}, "Github labels")
+	rootCmd.Flags().StringArrayVar(&labels, "label", []string{"enhancement"}, "Github labels")
 	_ = rootCmd.MarkFlagRequired("owner")
 	_ = rootCmd.MarkFlagRequired("repo")
 }

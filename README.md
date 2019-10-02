@@ -4,7 +4,7 @@ Create an access token at:  https://github.com/settings/tokens
 
 ```shell script
 export ACCESS_TOKEN=db015666.
-o run ./gen --owner argoproj --repo argo-cd > cards.html
+go run ./gen --owner argoproj --repo argo-cd --label enhancement --label helm > cards.html
 ```
 
 ![cards](docs/images/cards.png)
