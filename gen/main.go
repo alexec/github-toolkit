@@ -15,6 +15,7 @@ var accessToken string
 var owner string
 var repo string
 var labels []string
+var excludeLabels []string
 
 var rootCmd = &cobra.Command{
 	Use: "gen",
@@ -44,13 +45,25 @@ var rootCmd = &cobra.Command{
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 
-    <title>%v cards</title>
+    <title>Cards</title>
   </head>
   <body>
 <div class="container">
 <div class="card-columns">
 `, len(issues))
 		for _, i := range issues {
+
+			skip := false
+			for _, l := range i.Labels {
+				for _, e := range excludeLabels {
+					if l.GetName() == e {
+						skip = true
+					}
+				}
+			}
+			if skip {
+				continue
+			}
 
 			labels := ""
 			for _, l := range i.Labels {
@@ -82,7 +95,7 @@ var rootCmd = &cobra.Command{
 				i.GetTitle(),
 				labels,
 				i.GetNumber(),
-				i.GetCreatedAt().Format("2 Jan") ,
+				i.GetCreatedAt().Format("2 Jan"),
 				i.GetUser().GetLogin(),
 				reactions,
 				comments,
@@ -99,6 +112,7 @@ func init() {
 	rootCmd.Flags().StringVar(&owner, "owner", "", "Github owner (aka org)")
 	rootCmd.Flags().StringVar(&repo, "repo", "", "Github repo")
 	rootCmd.Flags().StringArrayVar(&labels, "label", []string{"enhancement"}, "Github labels")
+	rootCmd.Flags().StringArrayVar(&excludeLabels, "exclude-label", []string{}, "Github labels no exclude")
 	_ = rootCmd.MarkFlagRequired("owner")
 	_ = rootCmd.MarkFlagRequired("repo")
 }
