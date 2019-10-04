@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 	"golang.org/x/oauth2"
 	"gopkg.in/go-playground/colors.v1"
+	"github.com/hako/durafmt"
 )
 
 var accessToken string
@@ -155,7 +156,7 @@ var rootCmd = &cobra.Command{
   <div class="card-body">
     <h5 class="card-title">%s %s</h5>
     <h6 class="card-subtitle mb-2">%s</h6>
-    <h6 class="card-subtitle mb-2 text-muted">#%v opened on %v by %v %s</h6>
+    <h6 class="card-subtitle mb-2 text-muted">#%v opened %v ago by %v %s</h6>
     <p class="card-text">%s %s</p>
   </div>
 </div>`,
@@ -163,7 +164,7 @@ var rootCmd = &cobra.Command{
 				i.GetTitle(),
 				labels,
 				i.GetNumber(),
-				time.Since(i.GetCreatedAt()),
+				durafmt.ParseShort(time.Since(i.GetCreatedAt())),
 				i.GetUser().GetLogin(),
 				milestone,
 				reactions,
