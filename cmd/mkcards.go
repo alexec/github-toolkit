@@ -91,6 +91,9 @@ var rootCmd = &cobra.Command{
 
     <title>Max %v Cards</title>
 <style type='text/css'>
+a {
+	color: black;
+}
 .open path {
 	fill: green;
 }
@@ -155,14 +158,22 @@ var rootCmd = &cobra.Command{
 				}
 			}
 
+			issueType := "issue"
+			if i.IsPullRequest() {
+				issueType = "pull"
+			}
 			fmt.Printf(`<div class="card">
   <div class="card-body">
-    <h5 class="card-title">%s %s</h5>
+    <h5 class="card-title"><a href="https://github.com/%s/%s/%s/%v">%s %s</a></h5>
     <h6 class="card-subtitle mb-2">%s</h6>
     <h6 class="card-subtitle mb-2 text-muted">#%v opened %v ago by %v %s</h6>
     <p class="card-text">%s %s</p>
   </div>
 </div>`,
+				owner,
+				repo,
+				issueType,
+				i.GetNumber(),
 				icon,
 				i.GetTitle(),
 				labels,
