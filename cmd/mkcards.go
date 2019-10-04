@@ -7,10 +7,10 @@ import (
 	"time"
 
 	"github.com/google/go-github/v28/github"
+	"github.com/hako/durafmt"
 	"github.com/spf13/cobra"
 	"golang.org/x/oauth2"
 	"gopkg.in/go-playground/colors.v1"
-	"github.com/hako/durafmt"
 )
 
 var accessToken string
@@ -38,6 +38,9 @@ var rootCmd = &cobra.Command{
 
 	# open issues in milestone v1.3
 	mkcards --owner argoproj --repo argo-cd  --milestone v1.3
+
+	# issues opened in the last day
+	mkcards --owner argoproj --repo argo-cd  --state all --since 24h
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 
@@ -72,6 +75,7 @@ var rootCmd = &cobra.Command{
 			Labels:      labels,
 			Sort:        "update",
 			Milestone:   milestone,
+			Since:       time.Now().Add(-since),
 			ListOptions: github.ListOptions{PerPage: 100},
 		})
 		check(err)
@@ -99,7 +103,6 @@ var rootCmd = &cobra.Command{
 </style>
   </head>
   <body>
-<div class="container">
 <div class="card-columns">
 `, len(issues))
 		for _, i := range issues {
@@ -171,7 +174,7 @@ var rootCmd = &cobra.Command{
 				comments,
 			)
 		}
-		fmt.Println(`  </div></div>
+		fmt.Println(`  </div>
 </body>
 </html>`)
 
@@ -188,7 +191,7 @@ func init() {
 	rootCmd.Flags().StringVar(&state, "state", "open", "Github issue state, 'all', 'open' or 'closed'")
 	rootCmd.Flags().StringArrayVar(&labels, "label", []string{}, "Github labels")
 	rootCmd.Flags().StringArrayVar(&excludeLabels, "exclude-label", []string{}, "Github labels no exclude")
-	rootCmd.Flags().DurationVar(&since, "since", 24*365*time.Hour, "Github issue since, e.g. 1d")
+	rootCmd.Flags().DurationVar(&since, "since", 20*24*365*time.Hour, "Github issue since, e.g. 24h")
 	rootCmd.Flags().StringVar(&milestone, "milestone", "*", "Github milestone, can be 'none', '*', or the title")
 	_ = rootCmd.MarkFlagRequired("owner")
 	_ = rootCmd.MarkFlagRequired("repo")
