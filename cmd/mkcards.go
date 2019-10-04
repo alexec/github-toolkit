@@ -16,10 +16,23 @@ var owner string
 var repo string
 var labels []string
 var excludeLabels []string
+var since string
 
 var rootCmd = &cobra.Command{
-	Use: "gen",
+	Use: "mkcards",
+	Example: `
+	export ACCESS_TOKEN=db015666.. ;# Create an access token at:  https://github.com/settings/tokens
+
+	mkcards --owner argoproj --repo argo-cd --exclude-label 'wontfix' --exclude-label 'workaround' --exclude-label 'help wanted' > enhancements.html
+	mkcards --owner argoproj --repo argo-cd --label 'bug' --exclude-label 'wontfix' --exclude-label 'workaround' --exclude-label 'help wanted' > bugs.html
+`,
 	Run: func(cmd *cobra.Command, args []string) {
+
+		if accessToken == "" {
+			_ = cmd.Usage()
+			os.Exit(1)
+		}
+
 		ctx := context.Background()
 		ts := oauth2.StaticTokenSource(
 			&oauth2.Token{AccessToken: accessToken},
@@ -83,13 +96,17 @@ var rootCmd = &cobra.Command{
 			if i.GetComments() > 0 {
 				comments = fmt.Sprintf("💬 %v", i.GetComments())
 			}
+			milestone := ""
+			if i.GetMilestone() != nil {
+				milestone = fmt.Sprintf("%s", i.GetMilestone().GetTitle())
+			}
 
 			fmt.Printf(`<div class="card">
   <div class="card-body">
     <h5 class="card-title">%s</h5>
     <h6 class="card-subtitle mb-2">%s</h6>
     <h6 class="card-subtitle mb-2 text-muted">#%v opened on %v by %v</h6>
-    <p class="card-text">%s %s</p>
+    <p class="card-text">%s %s %s</p>
   </div>
 </div>`,
 				i.GetTitle(),
@@ -99,6 +116,7 @@ var rootCmd = &cobra.Command{
 				i.GetUser().GetLogin(),
 				reactions,
 				comments,
+				milestone,
 			)
 		}
 		fmt.Println(`  </div></div>
@@ -117,6 +135,7 @@ func init() {
 	rootCmd.Flags().StringVar(&repo, "repo", "", "Github repo")
 	rootCmd.Flags().StringArrayVar(&labels, "label", []string{"enhancement"}, "Github labels")
 	rootCmd.Flags().StringArrayVar(&excludeLabels, "exclude-label", []string{}, "Github labels no exclude")
+	rootCmd.Flags().StringVar(&since, "since", "", "Github issue since, e.g. ")
 	_ = rootCmd.MarkFlagRequired("owner")
 	_ = rootCmd.MarkFlagRequired("repo")
 }
