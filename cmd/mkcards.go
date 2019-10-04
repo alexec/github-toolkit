@@ -163,7 +163,7 @@ var rootCmd = &cobra.Command{
 				i.GetTitle(),
 				labels,
 				i.GetNumber(),
-				i.GetCreatedAt().Format("2 Jan"),
+				time.Since(i.GetCreatedAt()),
 				i.GetUser().GetLogin(),
 				milestone,
 				reactions,
