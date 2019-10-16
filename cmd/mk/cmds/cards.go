@@ -15,9 +15,13 @@ import (
 	"github.com/alexec/github-issue-cards/cmd/mk/util"
 )
 
-var accessToken string
-var owner string
-var repo string
+type GitRepo struct {
+	accessToken string
+	owner       string
+	repo        string
+}
+
+var repo GitRepo
 var state string
 var labels []string
 var excludeLabels []string
@@ -46,14 +50,14 @@ var CardsCmd = &cobra.Command{
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		if accessToken == "" {
+		if repo.accessToken == "" {
 			_ = cmd.Usage()
 			os.Exit(1)
 		}
 
 		ctx := context.Background()
 		ts := oauth2.StaticTokenSource(
-			&oauth2.Token{AccessToken: accessToken},
+			&oauth2.Token{AccessToken: repo.accessToken},
 		)
 		tc := oauth2.NewClient(ctx, ts)
 		client := github.NewClient(tc)
@@ -61,7 +65,7 @@ var CardsCmd = &cobra.Command{
 		switch milestone {
 		case "none", "*":
 		default:
-			milestones, _, err := client.Issues.ListMilestones(ctx, owner, repo, &github.MilestoneListOptions{})
+			milestones, _, err := client.Issues.ListMilestones(ctx, repo.owner, repo.repo, &github.MilestoneListOptions{})
 			util.Check(err)
 			for _, m := range milestones {
 				if m.GetTitle() == milestone {
@@ -72,7 +76,7 @@ var CardsCmd = &cobra.Command{
 		}
 
 		// https://developer.github.com/v3/issues/#list-issues-for-a-repository
-		issues, _, err := client.Issues.ListByRepo(ctx, owner, repo, &github.IssueListByRepoOptions{
+		issues, _, err := client.Issues.ListByRepo(ctx, repo.owner, repo.repo, &github.IssueListByRepoOptions{
 			State:       state,
 			Labels:      labels,
 			Sort:        "update",
@@ -172,8 +176,8 @@ a {
     <p class="card-text">%s %s</p>
   </div>
 </div>`,
-				owner,
-				repo,
+				repo.owner,
+				repo.repo,
 				issueType,
 				i.GetNumber(),
 				icon,
@@ -198,9 +202,9 @@ a {
 }
 
 func init() {
-	CardsCmd.Flags().StringVar(&accessToken, "access-token", os.Getenv("ACCESS_TOKEN"), "Github personal access token")
-	CardsCmd.Flags().StringVar(&owner, "owner", "", "Github owner (aka org)")
-	CardsCmd.Flags().StringVar(&repo, "repo", "", "Github repo")
+	CardsCmd.Flags().StringVar(&repo.accessToken, "access-token", os.Getenv("ACCESS_TOKEN"), "Github personal access token")
+	CardsCmd.Flags().StringVar(&repo.owner, "owner", "", "Github owner (aka org)")
+	CardsCmd.Flags().StringVar(&repo.repo, "repo", "", "Github repo")
 	CardsCmd.Flags().StringVar(&state, "state", "open", "Github issue state, 'all', 'open' or 'closed'")
 	CardsCmd.Flags().StringArrayVar(&labels, "label", []string{}, "Github labels")
 	CardsCmd.Flags().StringArrayVar(&excludeLabels, "exclude-label", []string{}, "Github labels no exclude")
