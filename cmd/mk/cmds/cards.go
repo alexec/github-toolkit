@@ -26,21 +26,23 @@ func NewCardsCmd() *cobra.Command {
 		Use: "cards",
 		Example: `
 	export ACCESS_TOKEN=db015666.. ;# Create an access token at:  https://github.com/settings/tokens
+	export OWNER=argoproj
+	export REPO=argo-cd
 
 	# enhancements backlog 
-	mk cards --owner argoproj --repo argo-cd --label enhancement --exclude-label wontfix --milestone none 
+	mk cards --label enhancement --exclude-label wontfix --milestone none 
 	
 	# bugs backlog
-	mk cards --owner argoproj --repo argo-cd --label bug --exclude-label wontfix --milestone none 
+	mk cards --label bug --exclude-label wontfix --milestone none 
 
 	# help wanted backlog
-	mk cards --owner argoproj --repo argo-cd --label 'help wanted' --exclude-label wontfix' --milestone none 
+	mk cards --label 'help wanted' --exclude-label wontfix' --milestone none 
 
 	# open issues in milestone v1.3
-	mk cards --owner argoproj --repo argo-cd  --milestone v1.3
+	mk cards  --milestone v1.3
 
 	# issues opened in the last day
-	mk cards --owner argoproj --repo argo-cd  --state all --since 24h
+	mk cards  --state all --since 24h
 `,
 		Run: func(cmd *cobra.Command, args []string) {
 			ctx, client := newClient(repo, cmd)

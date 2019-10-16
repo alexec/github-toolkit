@@ -3,7 +3,7 @@
 Build:
 
 ```shell script
-GO111MODULE=on go build ./cmd/
+GO111MODULE=on go install ./cmd/mk/
 ```
 
 To see usage and examples:
