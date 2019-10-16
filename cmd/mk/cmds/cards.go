@@ -1,29 +1,21 @@
 package cmds;
 
 import (
-	"context"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/google/go-github/v28/github"
 	"github.com/hako/durafmt"
 	"github.com/spf13/cobra"
-	"golang.org/x/oauth2"
 	"gopkg.in/go-playground/colors.v1"
 
 	"github.com/alexec/github-issue-cards/cmd/mk/util"
 )
 
-type GitRepo struct {
-	accessToken string
-	owner       string
-	repo        string
-}
 
 func NewCardsCmd() *cobra.Command {
 
-	var repo GitRepo
+	var repo GithubRepo
 	var state string
 	var labels []string
 	var excludeLabels []string
@@ -51,18 +43,7 @@ func NewCardsCmd() *cobra.Command {
 	mk cards --owner argoproj --repo argo-cd  --state all --since 24h
 `,
 		Run: func(cmd *cobra.Command, args []string) {
-
-			if repo.accessToken == "" {
-				_ = cmd.Usage()
-				os.Exit(1)
-			}
-
-			ctx := context.Background()
-			ts := oauth2.StaticTokenSource(
-				&oauth2.Token{AccessToken: repo.accessToken},
-			)
-			tc := oauth2.NewClient(ctx, ts)
-			client := github.NewClient(tc)
+			ctx, client := newClient(repo, cmd)
 
 			switch milestone {
 			case "none", "*":
@@ -203,16 +184,14 @@ a {
 		},
 	}
 
-	cmd.Flags().StringVar(&repo.accessToken, "access-token", os.Getenv("ACCESS_TOKEN"), "Github personal access token")
-	cmd.Flags().StringVar(&repo.owner, "owner", "", "Github owner (aka org)")
-	cmd.Flags().StringVar(&repo.repo, "repo", "", "Github repo")
+	repo = gitHubRepo(cmd)
+
 	cmd.Flags().StringVar(&state, "state", "open", "Github issue state, 'all', 'open' or 'closed'")
 	cmd.Flags().StringArrayVar(&labels, "label", []string{}, "Github labels")
 	cmd.Flags().StringArrayVar(&excludeLabels, "exclude-label", []string{}, "Github labels no exclude")
 	cmd.Flags().DurationVar(&since, "since", 20*24*365*time.Hour, "Github issue since, e.g. 24h")
 	cmd.Flags().StringVar(&milestone, "milestone", "*", "Github milestone, can be 'none', '*', or the title")
-	_ = cmd.MarkFlagRequired("owner")
-	_ = cmd.MarkFlagRequired("repo")
 
 	return cmd
 }
+

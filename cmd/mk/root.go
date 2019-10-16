@@ -10,11 +10,11 @@ import (
 func main() {
 	cmd := &cobra.Command{
 		Use:   "mk",
-		Short: "argocd controls a Argo CD server",
 		Run: func(c *cobra.Command, args []string) {
 			c.HelpFunc()(c, args)
 		},
 	}
 	cmd.AddCommand(cmds.NewCardsCmd())
+	cmd.AddCommand(cmds.NewReleaseNoteCmd())
 	util.Check(cmd.Execute())
 }
