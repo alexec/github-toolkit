@@ -1,4 +1,4 @@
-package main;
+package cmds;
 
 import (
 	"context"
@@ -11,6 +11,8 @@ import (
 	"github.com/spf13/cobra"
 	"golang.org/x/oauth2"
 	"gopkg.in/go-playground/colors.v1"
+
+	"github.com/alexec/github-issue-cards/cmd/mk/util"
 )
 
 var accessToken string
@@ -22,25 +24,25 @@ var excludeLabels []string
 var since time.Duration
 var milestone string
 
-var rootCmd = &cobra.Command{
-	Use: "mkcards",
+var CardsCmd = &cobra.Command{
+	Use: "cards",
 	Example: `
 	export ACCESS_TOKEN=db015666.. ;# Create an access token at:  https://github.com/settings/tokens
 
 	# enhancements backlog 
-	mkcards --owner argoproj --repo argo-cd --label enhancement --exclude-label wontfix --milestone none 
+	mk cards --owner argoproj --repo argo-cd --label enhancement --exclude-label wontfix --milestone none 
 	
 	# bugs backlog
-	mkcards --owner argoproj --repo argo-cd --label bug --exclude-label wontfix --milestone none 
+	mk cards --owner argoproj --repo argo-cd --label bug --exclude-label wontfix --milestone none 
 
 	# help wanted backlog
-	mkcards --owner argoproj --repo argo-cd --label 'help wanted' --exclude-label wontfix' --milestone none 
+	mk cards --owner argoproj --repo argo-cd --label 'help wanted' --exclude-label wontfix' --milestone none 
 
 	# open issues in milestone v1.3
-	mkcards --owner argoproj --repo argo-cd  --milestone v1.3
+	mk cards --owner argoproj --repo argo-cd  --milestone v1.3
 
 	# issues opened in the last day
-	mkcards --owner argoproj --repo argo-cd  --state all --since 24h
+	mk cards --owner argoproj --repo argo-cd  --state all --since 24h
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 
@@ -60,7 +62,7 @@ var rootCmd = &cobra.Command{
 		case "none", "*":
 		default:
 			milestones, _, err := client.Issues.ListMilestones(ctx, owner, repo, &github.MilestoneListOptions{})
-			check(err)
+			util.Check(err)
 			for _, m := range milestones {
 				if m.GetTitle() == milestone {
 					milestone = fmt.Sprintf("%v", m.GetNumber())
@@ -78,7 +80,7 @@ var rootCmd = &cobra.Command{
 			Since:       time.Now().Add(-since),
 			ListOptions: github.ListOptions{PerPage: 100},
 		})
-		check(err)
+		util.Check(err)
 		fmt.Printf(`<!doctype html>
 <html lang="en">
   <head>
@@ -125,7 +127,7 @@ a {
 			labels := ""
 			for _, l := range i.Labels {
 				color, err := colors.Parse("#" + l.GetColor())
-				check(err)
+				util.Check(err)
 				fg := "white"
 				if color.IsLight() {
 					fg = "black"
@@ -196,24 +198,14 @@ a {
 }
 
 func init() {
-	rootCmd.Flags().StringVar(&accessToken, "access-token", os.Getenv("ACCESS_TOKEN"), "Github personal access token")
-	rootCmd.Flags().StringVar(&owner, "owner", "", "Github owner (aka org)")
-	rootCmd.Flags().StringVar(&repo, "repo", "", "Github repo")
-	rootCmd.Flags().StringVar(&state, "state", "open", "Github issue state, 'all', 'open' or 'closed'")
-	rootCmd.Flags().StringArrayVar(&labels, "label", []string{}, "Github labels")
-	rootCmd.Flags().StringArrayVar(&excludeLabels, "exclude-label", []string{}, "Github labels no exclude")
-	rootCmd.Flags().DurationVar(&since, "since", 20*24*365*time.Hour, "Github issue since, e.g. 24h")
-	rootCmd.Flags().StringVar(&milestone, "milestone", "*", "Github milestone, can be 'none', '*', or the title")
-	_ = rootCmd.MarkFlagRequired("owner")
-	_ = rootCmd.MarkFlagRequired("repo")
-}
-
-func check(err error) {
-	if err != nil {
-		panic(err)
-	}
-}
-
-func main() {
-	check(rootCmd.Execute())
+	CardsCmd.Flags().StringVar(&accessToken, "access-token", os.Getenv("ACCESS_TOKEN"), "Github personal access token")
+	CardsCmd.Flags().StringVar(&owner, "owner", "", "Github owner (aka org)")
+	CardsCmd.Flags().StringVar(&repo, "repo", "", "Github repo")
+	CardsCmd.Flags().StringVar(&state, "state", "open", "Github issue state, 'all', 'open' or 'closed'")
+	CardsCmd.Flags().StringArrayVar(&labels, "label", []string{}, "Github labels")
+	CardsCmd.Flags().StringArrayVar(&excludeLabels, "exclude-label", []string{}, "Github labels no exclude")
+	CardsCmd.Flags().DurationVar(&since, "since", 20*24*365*time.Hour, "Github issue since, e.g. 24h")
+	CardsCmd.Flags().StringVar(&milestone, "milestone", "*", "Github milestone, can be 'none', '*', or the title")
+	_ = CardsCmd.MarkFlagRequired("owner")
+	_ = CardsCmd.MarkFlagRequired("repo")
 }
