@@ -15,6 +15,6 @@ func main() {
 			c.HelpFunc()(c, args)
 		},
 	}
-	cmd.AddCommand(cmds.CardsCmd)
+	cmd.AddCommand(cmds.NewCardsCmd())
 	util.Check(cmd.Execute())
 }
