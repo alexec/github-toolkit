@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"os/exec"
 	"regexp"
 	"strconv"
 	"strings"
@@ -18,22 +19,20 @@ import (
 func NewReleaseNoteCmd() *cobra.Command {
 
 	var repo GithubRepo
-	var commits string
 
 	var cmd = &cobra.Command{
-		Use: "relnote",
+		Use: "relnote REVISION_RANGE",
 		Example: `	
 	export ACCESS_TOKEN=db015666.. ;# Create an access token at:  https://github.com/settings/tokens
 	export OWNER=argoproj
 	export REPO=argo-cd
 	
-	# Get a list of commits:
-	git log --format=%H v1.2.0..HEAD . > commits
-	
-	# Use that list for your note:
-	mk relnote --commits "$(cat commits | tr "\n" ,)"
+	# Create the note:
+	mk relnote release-1.3..HEAD
 `,
 		Run: func(cmd *cobra.Command, args []string) {
+
+			revisionRange := args[0]
 
 			ctx, client := newClient(repo, cmd)
 			contributors := map[string]int{}
@@ -49,8 +48,10 @@ func NewReleaseNoteCmd() *cobra.Command {
 				CacheSizeMax: 1024 * 1024,
 			})
 
+			output, err := exec.Command("git", "log", "--format=%H", revisionRange, "--", ".").Output()
+			util.Check(err)
 			fmt.Println("<!--")
-			for _, sha := range strings.Split(commits, ",") {
+			for _, sha := range strings.Split(string(output), "\n") {
 				if sha == "" {
 					continue
 				}
@@ -152,7 +153,6 @@ func NewReleaseNoteCmd() *cobra.Command {
 	}
 
 	repo = gitHubRepo(cmd)
-	cmd.Flags().StringVar(&commits, "commits", "string", "List of commits")
 	_ = cmd.MarkFlagRequired("commit")
 
 	return cmd
