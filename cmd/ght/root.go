@@ -3,13 +3,13 @@ package main
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/alexec/github-toolkit/cmd/gt/cmds"
-	"github.com/alexec/github-toolkit/cmd/gt/util"
+	"github.com/alexec/github-toolkit/cmd/ght/cmds"
+	"github.com/alexec/github-toolkit/cmd/ght/util"
 )
 
 func main() {
 	cmd := &cobra.Command{
-		Use:   "gt",
+		Use:   "ght",
 		Run: func(c *cobra.Command, args []string) {
 			c.HelpFunc()(c, args)
 		},

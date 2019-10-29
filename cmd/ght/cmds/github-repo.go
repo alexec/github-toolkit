@@ -2,11 +2,15 @@ package cmds
 
 import (
 	"context"
+	"fmt"
 	"os"
+	"os/exec"
 
 	"github.com/google/go-github/v28/github"
 	"github.com/spf13/cobra"
 	"golang.org/x/oauth2"
+
+	"github.com/alexec/github-toolkit/cmd/ght/util"
 )
 
 type GithubRepo struct {
@@ -16,8 +20,14 @@ type GithubRepo struct {
 }
 
 func gitHubRepo(cmd *cobra.Command) GithubRepo {
+
+	git := exec.Command("git", "config", "--get", "remote.origin.url")
+	bytes, err := git.Output()
+	util.Check(err)
+	fmt.Printf(string(bytes))
+
 	repo := GithubRepo{}
-	cmd.Flags().StringVar(&repo.accessToken, "access-token", os.Getenv("ACCESS_TOKEN"), "Github personal access token")
+	cmd.Flags().StringVar(&repo.accessToken, "access-token", os.Getenv("ACCESS_TOKEN"), "Github personal access token, create one at https://github.com/settings/tokens")
 	cmd.Flags().StringVar(&repo.owner, "owner", os.Getenv("OWNER"), "Github owner (aka org)")
 	cmd.Flags().StringVar(&repo.repo, "repo", os.Getenv("REPO"), "Github repo")
 	return repo

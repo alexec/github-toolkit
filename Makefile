@@ -1,4 +1,4 @@
-build: gt
-gt:
-	GO111MODULE=on go install ./cmd/gt
+build: ght
+ght:
+	GO111MODULE=on go install ./cmd/ght
 

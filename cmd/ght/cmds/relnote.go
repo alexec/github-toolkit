@@ -13,7 +13,7 @@ import (
 	"github.com/peterbourgon/diskv"
 	"github.com/spf13/cobra"
 
-	"github.com/alexec/github-toolkit/cmd/gt/util"
+	"github.com/alexec/github-toolkit/cmd/ght/util"
 )
 
 func NewReleaseNoteCmd() *cobra.Command {
@@ -23,14 +23,14 @@ func NewReleaseNoteCmd() *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "relnote REVISION_RANGE",
 		Short: "Create release note based on Github issue.",
-		Long:  ``,
+		Long:  `TODO`,
 		Example: `	
 	export ACCESS_TOKEN=db015666.. ;# Create an access token at:  https://github.com/settings/tokens
 	export OWNER=argoproj
 	export REPO=argo-cd
 	
 	# Create the note:
-	gt relnote release-1.3..HEAD
+	ght relnote release-1.3..HEAD
 `,
 		Run: func(cmd *cobra.Command, args []string) {
 

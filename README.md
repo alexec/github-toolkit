@@ -3,21 +3,21 @@
 Install:
 
 ```
-GO111MODULE=on go install github.com/alexec/github-toolkit/cmd/gt
+GO111MODULE=on go install github.com/alexec/github-toolkit/cmd/ght
 ```
 
 Create release note:
 
 ```
 cd my-repo
-gt relnote v1.3.0-rc3..v1.3.0-rc4
+ght relnote v1.3.0-rc3..v1.3.0-rc4
 ```
 
 Create cards:
 
 ```
 cd my-repo
-./gt cards --help
+ght cards --help
 ```
 
 ![cards](docs/images/cards.png)

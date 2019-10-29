@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 	"gopkg.in/go-playground/colors.v1"
 
-	"github.com/alexec/github-toolkit/cmd/gt/util"
+	"github.com/alexec/github-toolkit/cmd/ght/util"
 )
 
 func NewCardsCmd() *cobra.Command {
@@ -30,19 +30,19 @@ func NewCardsCmd() *cobra.Command {
 		export REPO=argo-cd
 	
 		# enhancements backlog 
-		gt cards --label enhancement --exclude-label wontfix --milestone none 
+		ght cards --label enhancement --exclude-label wontfix --milestone none 
 		
 		# bugs backlog
-		gt cards --label bug --exclude-label wontfix --milestone none 
+		ght cards --label bug --exclude-label wontfix --milestone none 
 	
 		# help wanted backlog
-		gt cards --label 'help wanted' --exclude-label wontfix' --milestone none 
+		ght cards --label 'help wanted' --exclude-label wontfix' --milestone none 
 	
 		# open issues in milestone v1.3
-		gt cards --milestone v1.3
+		ght cards --milestone v1.3
 	
 		# issues opened in the last day
-		gt cards --state all --since 24h
+		ght cards --state all --since 24h
 	`,
 		Run: func(cmd *cobra.Command, args []string) {
 			ctx, client := newClient(repo, cmd)
