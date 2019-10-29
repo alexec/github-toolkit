@@ -25,10 +25,6 @@ func NewReleaseNoteCmd() *cobra.Command {
 		Short: "Create release note based on Github issue.",
 		Long:  `TODO`,
 		Example: `	
-	export ACCESS_TOKEN=db015666.. ;# Create an access token at:  https://github.com/settings/tokens
-	export OWNER=argoproj
-	export REPO=argo-cd
-	
 	# Create the note:
 	ght relnote release-1.3..HEAD
 `,
@@ -52,7 +48,6 @@ func NewReleaseNoteCmd() *cobra.Command {
 
 			output, err := exec.Command("git", "log", "--format=%H", revisionRange, "--", ".").Output()
 			util.Check(err)
-			fmt.Println("<!--")
 			for _, sha := range strings.Split(string(output), "\n") {
 				if sha == "" {
 					continue
@@ -73,7 +68,6 @@ func NewReleaseNoteCmd() *cobra.Command {
 				}
 				// extract the issue and add to the note
 				message := strings.SplitN(commit.GetMessage(), "\n", 2)[0]
-				fmt.Println(message)
 				issues := map[int]bool{}
 				for _, text := range regexp.MustCompile("#[0-9]+").FindAllString(message, -1) {
 					id, err := strconv.Atoi(strings.TrimPrefix(text, "#"))
@@ -122,29 +116,30 @@ func NewReleaseNoteCmd() *cobra.Command {
 				}
 
 			}
-			fmt.Println("-->")
-			fmt.Println("#### New Features")
-			fmt.Println()
-			fmt.Println("TODO")
-			fmt.Println()
-			fmt.Println("#### Enhancements")
-			fmt.Println()
-			for _, i := range enhancements {
-				fmt.Printf("* %s\n", i)
+			if len(enhancements) > 0 {
+				fmt.Println("#### Enhancements")
+				fmt.Println()
+				for _, i := range enhancements {
+					fmt.Printf("* %s\n", i)
+				}
+				fmt.Println()
 			}
-			fmt.Println()
-			fmt.Println("#### Bug Fixes")
-			fmt.Println()
-			for _, i := range bugFixes {
-				fmt.Printf("- %s\n", i)
+			if len(bugFixes) > 0 {
+				fmt.Println("#### Bug Fixes")
+				fmt.Println()
+				for _, i := range bugFixes {
+					fmt.Printf("- %s\n", i)
+				}
+				fmt.Println()
 			}
-			fmt.Println()
-			fmt.Println("#### Other")
-			fmt.Println()
-			for _, i := range other {
-				fmt.Printf("- %s\n", i)
+			if len(other) > 0 {
+				fmt.Println("#### Other")
+				fmt.Println()
+				for _, i := range other {
+					fmt.Printf("- %s\n", i)
+				}
+				fmt.Println()
 			}
-			fmt.Println()
 			fmt.Println("#### Contributors")
 			fmt.Println()
 			fmt.Println()

@@ -25,10 +25,6 @@ func NewCardsCmd() *cobra.Command {
 		Use:   "cards",
 		Short: "Create printable Github cards",
 		Example: `
-		export ACCESS_TOKEN=db015666.. ;# Create an access token at:  https://github.com/settings/tokens
-		export OWNER=argoproj
-		export REPO=argo-cd
-	
 		# enhancements backlog 
 		ght cards --label enhancement --exclude-label wontfix --milestone none 
 		
