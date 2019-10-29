@@ -3,8 +3,8 @@ package main
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/alexec/github-issue-cards/cmd/mk/cmds"
-	"github.com/alexec/github-issue-cards/cmd/mk/util"
+	"github.com/alexec/github-toolkit/cmd/gt/cmds"
+	"github.com/alexec/github-toolkit/cmd/gt/util"
 )
 
 func main() {

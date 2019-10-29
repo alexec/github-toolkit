@@ -26,5 +26,5 @@ cd my-repo
 # Building
 
 ```
-GO111MODULE=on go install ./cmd/gt
+make
 ```

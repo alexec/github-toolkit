@@ -9,9 +9,8 @@ import (
 	"github.com/spf13/cobra"
 	"gopkg.in/go-playground/colors.v1"
 
-	"github.com/alexec/github-issue-cards/cmd/mk/util"
+	"github.com/alexec/github-toolkit/cmd/gt/util"
 )
-
 
 func NewCardsCmd() *cobra.Command {
 
@@ -23,27 +22,28 @@ func NewCardsCmd() *cobra.Command {
 	var milestone string
 
 	var cmd = &cobra.Command{
-		Use: "cards",
+		Use:   "cards",
+		Short: "Create printable Github cards",
 		Example: `
-	export ACCESS_TOKEN=db015666.. ;# Create an access token at:  https://github.com/settings/tokens
-	export OWNER=argoproj
-	export REPO=argo-cd
-
-	# enhancements backlog 
-	mk cards --label enhancement --exclude-label wontfix --milestone none 
+		export ACCESS_TOKEN=db015666.. ;# Create an access token at:  https://github.com/settings/tokens
+		export OWNER=argoproj
+		export REPO=argo-cd
 	
-	# bugs backlog
-	mk cards --label bug --exclude-label wontfix --milestone none 
-
-	# help wanted backlog
-	mk cards --label 'help wanted' --exclude-label wontfix' --milestone none 
-
-	# open issues in milestone v1.3
-	mk cards  --milestone v1.3
-
-	# issues opened in the last day
-	mk cards  --state all --since 24h
-`,
+		# enhancements backlog 
+		gt cards --label enhancement --exclude-label wontfix --milestone none 
+		
+		# bugs backlog
+		gt cards --label bug --exclude-label wontfix --milestone none 
+	
+		# help wanted backlog
+		gt cards --label 'help wanted' --exclude-label wontfix' --milestone none 
+	
+		# open issues in milestone v1.3
+		gt cards --milestone v1.3
+	
+		# issues opened in the last day
+		gt cards --state all --since 24h
+	`,
 		Run: func(cmd *cobra.Command, args []string) {
 			ctx, client := newClient(repo, cmd)
 
@@ -71,34 +71,34 @@ func NewCardsCmd() *cobra.Command {
 			})
 			util.Check(err)
 			fmt.Printf(`<!doctype html>
-<html lang="en">
-  <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-
-    <title>Max %v Cards</title>
-<style type='text/css'>
-a {
-	color: black;
-}
-.open path {
-	fill: green;
-}
-.closed path {
-	fill: red;
-}
-.merged path {
-	fill: purple;
-}
-</style>
-  </head>
-  <body>
-<div class="card-columns">
-`, len(issues))
+	<html lang="en">
+	  <head>
+	    <!-- Required meta tags -->
+	    <meta charset="utf-8">
+	    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	
+	    <!-- Bootstrap CSS -->
+	    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+	
+	    <title>Max %v Cards</title>
+	<style type='text/css'>
+	a {
+		color: black;
+	}
+	.open path {
+		fill: green;
+	}
+	.closed path {
+		fill: red;
+	}
+	.merged path {
+		fill: purple;
+	}
+	</style>
+	  </head>
+	  <body>
+	<div class="card-columns">
+	`, len(issues))
 			for _, i := range issues {
 
 				skip := false
@@ -154,13 +154,13 @@ a {
 					issueType = "pull"
 				}
 				fmt.Printf(`<div class="card">
-  <div class="card-body">
-    <h5 class="card-title"><a href="https://github.com/%s/%s/%s/%v">%s %s</a></h5>
-    <h6 class="card-subtitle mb-2">%s</h6>
-    <h6 class="card-subtitle mb-2 text-muted">#%v opened %v ago by %v %s</h6>
-    <p class="card-text">%s %s</p>
-  </div>
-</div>`,
+	  <div class="card-body">
+	    <h5 class="card-title"><a href="https://github.com/%s/%s/%s/%v">%s %s</a></h5>
+	    <h6 class="card-subtitle mb-2">%s</h6>
+	    <h6 class="card-subtitle mb-2 text-muted">#%v opened %v ago by %v %s</h6>
+	    <p class="card-text">%s %s</p>
+	  </div>
+	</div>`,
 					repo.owner,
 					repo.repo,
 					issueType,
@@ -177,13 +177,27 @@ a {
 				)
 			}
 			fmt.Println(`  </div>
-</body>
-</html>`)
+	</body>
+	</html>`)
 
 			if len(issues) >= 100 {
 				panic("100 or more issues, we do not support pagination, so we do not support this number of issues")
 			}
 		},
+		RunE:                       nil,
+		PostRun:                    nil,
+		PostRunE:                   nil,
+		PersistentPostRun:          nil,
+		PersistentPostRunE:         nil,
+		SilenceErrors:              false,
+		SilenceUsage:               false,
+		DisableFlagParsing:         false,
+		DisableAutoGenTag:          false,
+		DisableFlagsInUseLine:      false,
+		DisableSuggestions:         false,
+		SuggestionsMinimumDistance: 0,
+		TraverseChildren:           false,
+		FParseErrWhitelist:         cobra.FParseErrWhitelist{},
 	}
 
 	repo = gitHubRepo(cmd)
@@ -196,4 +210,3 @@ a {
 
 	return cmd
 }
-
