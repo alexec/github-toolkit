@@ -1,15 +1,30 @@
-# Create Nice Cards From Github Issues
+# Github Toolkit
 
-Build:
+Install:
 
-```shell script
-GO111MODULE=on go install ./cmd/mk/
+```
+GO111MODULE=on go install github.com/alexec/github-toolkit/cmd/gt
 ```
 
-To see usage and examples:
+Create release note:
 
-```shell script
-./mk cards --help
+```
+cd my-repo
+gt relnote v1.3.0-rc3..v1.3.0-rc4
+```
+
+Create cards:
+
+```
+cd my-repo
+./gt cards --help
 ```
 
 ![cards](docs/images/cards.png)
+
+
+# Building
+
+```
+GO111MODULE=on go install ./cmd/gt
+```

@@ -1,9 +1,9 @@
-module github.com/alexec/github-issue-cards
+module github.com/alexec/github-toolkit
 
 go 1.13
 
 require (
-	github.com/google/btree v1.0.0 // indirect
+	github.com/alexec/github-issue-cards v0.0.0-20191021223030-266dc9772a86
 	github.com/google/go-github/v28 v28.1.1
 	github.com/hako/durafmt v0.0.0-20190612201238-650ed9f29a84
 	github.com/peterbourgon/diskv v2.0.1+incompatible

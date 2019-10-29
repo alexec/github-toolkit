@@ -9,7 +9,7 @@ import (
 
 func main() {
 	cmd := &cobra.Command{
-		Use:   "mk",
+		Use:   "gt",
 		Run: func(c *cobra.Command, args []string) {
 			c.HelpFunc()(c, args)
 		},
