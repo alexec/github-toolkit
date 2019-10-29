@@ -2,9 +2,9 @@ package cmds
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/google/go-github/v28/github"
 	"github.com/spf13/cobra"
@@ -19,18 +19,34 @@ type GithubRepo struct {
 	repo        string
 }
 
-func gitHubRepo(cmd *cobra.Command) GithubRepo {
+func NewGithubRepo(url string) (repo GithubRepo) {
+	repo.accessToken = os.Getenv("ACCESS_TOKEN")
 
+	if strings.HasPrefix(url, "http") {
+		parts := strings.Split(url, "/")
+		repo.owner = parts[3]
+		repo.repo = strings.Split(parts[4], ".")[0]
+	} else {
+		parts := strings.Split(strings.Split(url, ":")[1], "/")
+		repo.owner = parts[0]
+		repo.repo = strings.Split(parts[1], ".")[0]
+	}
+	return
+}
+
+func gitHubRepo(cmd *cobra.Command) GithubRepo {
+	repo := NewGithubRepo(repoUrl())
+	cmd.Flags().StringVar(&repo.accessToken, "access-token", repo.accessToken, "Github personal access token, create one at https://github.com/settings/tokens")
+	cmd.Flags().StringVar(&repo.owner, "owner", repo.owner, "Github owner (aka org)")
+	cmd.Flags().StringVar(&repo.repo, "repo", repo.repo, "Github repo")
+	return repo
+}
+
+func repoUrl() string {
 	git := exec.Command("git", "config", "--get", "remote.origin.url")
 	bytes, err := git.Output()
 	util.Check(err)
-	fmt.Printf(string(bytes))
-
-	repo := GithubRepo{}
-	cmd.Flags().StringVar(&repo.accessToken, "access-token", os.Getenv("ACCESS_TOKEN"), "Github personal access token, create one at https://github.com/settings/tokens")
-	cmd.Flags().StringVar(&repo.owner, "owner", os.Getenv("OWNER"), "Github owner (aka org)")
-	cmd.Flags().StringVar(&repo.repo, "repo", os.Getenv("REPO"), "Github repo")
-	return repo
+	return string(bytes)
 }
 
 func newClient(repo GithubRepo, cmd *cobra.Command) (context.Context, *github.Client) {
