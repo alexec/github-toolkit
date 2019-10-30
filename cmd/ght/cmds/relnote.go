@@ -100,6 +100,7 @@ func NewReleaseNoteCmd() *cobra.Command {
 						} else if labels["bug"] {
 							bugFixes = append(bugFixes, message)
 						} else if issue.IsPullRequest() {
+							// TODO - we should be better at attributing PRs to non-PR issues
 							pullRequests = append(pullRequests, message)
 						} else {
 							other = append(other, message)
