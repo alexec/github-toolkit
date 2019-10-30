@@ -36,6 +36,7 @@ func NewReleaseNoteCmd() *cobra.Command {
 			contributors := map[string]int{}
 			var enhancements []string
 			var bugFixes []string
+			var pullRequests []string
 			var other []string
 
 			_ = os.MkdirAll("/tmp/relnote/commit", 777)
@@ -69,7 +70,7 @@ func NewReleaseNoteCmd() *cobra.Command {
 				// extract the issue and add to the note
 				message := strings.SplitN(commit.GetMessage(), "\n", 2)[0]
 				issues := map[int]bool{}
-				for _, text := range regexp.MustCompile("#[0-9]+").FindAllString(message, -1) {
+				for _, text := range regexp.MustCompile("#[0-9]+").FindAllString(message, 1) {
 					id, err := strconv.Atoi(strings.TrimPrefix(text, "#"))
 					util.Check(err)
 					_, ok := issues[id]
@@ -94,13 +95,12 @@ func NewReleaseNoteCmd() *cobra.Command {
 						for _, l := range issue.Labels {
 							labels[*l.Name] = true
 						}
-						if issue.IsPullRequest() {
-							continue
-						}
 						if labels["enhancement"] {
 							enhancements = append(enhancements, message)
 						} else if labels["bug"] {
 							bugFixes = append(bugFixes, message)
+						} else if issue.IsPullRequest() {
+							pullRequests = append(pullRequests, message)
 						} else {
 							other = append(other, message)
 						}
@@ -140,8 +140,15 @@ func NewReleaseNoteCmd() *cobra.Command {
 				}
 				fmt.Println()
 			}
+			if len(pullRequests) > 0 {
+				fmt.Println("#### Pull Requests")
+				fmt.Println()
+				for _, i := range pullRequests {
+					fmt.Printf("- %s\n", i)
+				}
+				fmt.Println()
+			}
 			fmt.Println("#### Contributors")
-			fmt.Println()
 			fmt.Println()
 			for name, num := range contributors {
 				fmt.Printf("* %s <!-- num=%v -->\n", name, num)

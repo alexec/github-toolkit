@@ -60,5 +60,7 @@ func newClient(repo GithubRepo, cmd *cobra.Command) (context.Context, *github.Cl
 	)
 	tc := oauth2.NewClient(ctx, ts)
 	client := github.NewClient(tc)
+	// TODO
+	// client.BaseURL
 	return ctx, client
 }

@@ -26,5 +26,10 @@ ght cards --help
 # Building
 
 ```
+cd ~/go/src/github.com/alexec/github-toolkit
 make
 ```
+
+# TODO
+
+* [ ] Github Enterprise support.
