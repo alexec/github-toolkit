@@ -70,9 +70,7 @@ func NewReleaseNoteCmd() *cobra.Command {
 				// extract the issue and add to the note
 				message := strings.SplitN(commit.GetMessage(), "\n", 2)[0]
 				issues := map[int]bool{}
-				for _, text := range regexp.MustCompile("#[0-9]+").FindAllString(message, 1) {
-					id, err := strconv.Atoi(strings.TrimPrefix(text, "#"))
-					util.Check(err)
+				for _, id := range findIssues(message) {
 					_, ok := issues[id]
 					issues[id] = true
 					if !ok {
@@ -161,4 +159,14 @@ func NewReleaseNoteCmd() *cobra.Command {
 	_ = cmd.MarkFlagRequired("commit")
 
 	return cmd
+}
+
+func findIssues(message string) []int {
+	var issues []int
+	for _, text:= range regexp.MustCompile("#[0-9]+").FindAllString(message, 1) {
+		id, err := strconv.Atoi(strings.TrimPrefix(text, "#"))
+		util.Check(err)
+		issues = append(issues, id)
+	}
+	return issues
 }
