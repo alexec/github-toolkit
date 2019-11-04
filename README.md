@@ -1,5 +1,7 @@
 # Github Toolkit
 
+[![Build Status](https://travis-ci.org/alexec/github-toolkit.svg?branch=master)](https://travis-ci.org/alexec/github-toolkit)
+
 Install:
 
 ```
