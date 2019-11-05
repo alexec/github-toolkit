@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strconv"
@@ -37,10 +38,11 @@ func NewReleaseNoteCmd() *cobra.Command {
 
 			ctx, client := newClient(repo, cmd)
 
-			_ = os.MkdirAll("/tmp/relnote/commit", 0777)
-			_ = os.MkdirAll("/tmp/relnote/issue", 0777)
+			base := filepath.Join("/tmp", "relnote", repo.owner, repo.repo)
+
+			_ = os.MkdirAll(base, 0777)
 			diskCache := diskv.New(diskv.Options{
-				BasePath:     "/tmp/relnote",
+				BasePath:     base,
 				Transform:    func(s string) []string { return []string{} },
 				CacheSizeMax: 1024 * 1024,
 			})
@@ -54,7 +56,7 @@ func NewReleaseNoteCmd() *cobra.Command {
 				if sha == "" {
 					continue
 				}
-				key := "commit/" + sha
+				key := "commit." + sha
 				data, err := diskCache.Read(key)
 				commit := &github.Commit{}
 				if cache && err == nil {
@@ -85,7 +87,7 @@ func NewReleaseNoteCmd() *cobra.Command {
 				}
 			}
 
-			done := make(map[int]bool, 0)
+			done := make(map[int]bool)
 			var enhancements []string
 			var bugFixes []string
 			var pullRequests []string
@@ -95,7 +97,7 @@ func NewReleaseNoteCmd() *cobra.Command {
 				_, ok := done[id]
 				done[id] = true
 				if !ok {
-					key := fmt.Sprintf("issue/%v", id)
+					key := fmt.Sprintf("issue.%v", id)
 					data, err := diskCache.Read(key)
 					issue := &github.Issue{}
 					if err == nil {
