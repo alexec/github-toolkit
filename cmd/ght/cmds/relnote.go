@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -19,29 +20,26 @@ import (
 func NewReleaseNoteCmd() *cobra.Command {
 
 	var repo GithubRepo
+	var cache bool
 
 	var cmd = &cobra.Command{
 		Use:   "relnote REVISION_RANGE",
 		Short: "Create release note based on Github issue.",
-		Long:  `TODO`,
 		Example: `	
 	# Create the note:
-	ght relnote release-1.3..HEAD
+	ght relnote v1.3.0-rc3..v1.3.0-rc4
+
+	# Note the use of the caret "^" to include the last commit.
 `,
 		Run: func(cmd *cobra.Command, args []string) {
 
 			revisionRange := args[0]
 
 			ctx, client := newClient(repo, cmd)
-			contributors := map[string]int{}
-			var enhancements []string
-			var bugFixes []string
-			var pullRequests []string
-			var other []string
 
-			_ = os.MkdirAll("/tmp/relnote/commit", 777)
-			_ = os.MkdirAll("/tmp/relnote/issue", 777)
-			cache := diskv.New(diskv.Options{
+			_ = os.MkdirAll("/tmp/relnote/commit", 0777)
+			_ = os.MkdirAll("/tmp/relnote/issue", 0777)
+			diskCache := diskv.New(diskv.Options{
 				BasePath:     "/tmp/relnote",
 				Transform:    func(s string) []string { return []string{} },
 				CacheSizeMax: 1024 * 1024,
@@ -49,62 +47,28 @@ func NewReleaseNoteCmd() *cobra.Command {
 
 			output, err := exec.Command("git", "log", "--format=%H", revisionRange, "--", ".").Output()
 			util.Check(err)
+			var issues []int
+			contributors := map[string]int{}
 			for _, sha := range strings.Split(string(output), "\n") {
 				if sha == "" {
 					continue
 				}
 				key := "commit/" + sha
-				data, err := cache.Read(key)
+				data, err := diskCache.Read(key)
 				commit := &github.Commit{}
-				if err == nil {
-					err = json.Unmarshal(data, commit)
-					util.Check(err)
+				if cache && err == nil {
+					util.Check(json.Unmarshal(data, commit))
 				} else {
 					commit, _, err = client.Git.GetCommit(ctx, repo.owner, repo.repo, sha)
 					util.Check(err)
 					marshal, err := json.Marshal(commit)
 					util.Check(err)
-					err = cache.Write(key, marshal)
-					util.Check(err)
+					util.Check(diskCache.Write(key, marshal))
 				}
 				// extract the issue and add to the note
 				message := strings.SplitN(commit.GetMessage(), "\n", 2)[0]
-				issues := map[int]bool{}
-				for _, id := range findIssues(message) {
-					_, ok := issues[id]
-					issues[id] = true
-					if !ok {
-						key := fmt.Sprintf("issue/%v", id)
-						data, err = cache.Read(key)
-						issue := &github.Issue{}
-						if err == nil {
-							err := json.Unmarshal(data, issue)
-							util.Check(err)
-						} else {
-							issue, _, err = client.Issues.Get(ctx, repo.owner, repo.repo, id)
-							util.Check(err)
-							data, err := json.Marshal(issue)
-							util.Check(err)
-							err = cache.Write(key, data)
-							util.Check(err)
-						}
 
-						labels := map[string]bool{}
-						for _, l := range issue.Labels {
-							labels[*l.Name] = true
-						}
-						if labels["enhancement"] {
-							enhancements = append(enhancements, message)
-						} else if labels["bug"] {
-							bugFixes = append(bugFixes, message)
-						} else if issue.IsPullRequest() {
-							// TODO - we should be better at attributing PRs to non-PR issues
-							pullRequests = append(pullRequests, message)
-						} else {
-							other = append(other, message)
-						}
-					}
-				}
+				issues = append(issues, findIssues(message)...)
 				// add the author as a contributor
 				name := *commit.Author.Name
 				num, ok := contributors[name]
@@ -113,11 +77,60 @@ func NewReleaseNoteCmd() *cobra.Command {
 				} else {
 					contributors[name] = 1
 				}
-
 			}
+
+			done := make(map[int]bool, 0)
+			var enhancements []string
+			var bugFixes []string
+			var pullRequests []string
+			var other []string
+			for ; len(issues) > 0; {
+				var id int
+				id, issues = issues[len(issues)-1], issues[:len(issues)-1]
+				_, ok := done[id]
+				done[id] = true
+				if !ok {
+					key := fmt.Sprintf("issue/%v", id)
+					data, err := diskCache.Read(key)
+					issue := &github.Issue{}
+					if err == nil {
+						err := json.Unmarshal(data, issue)
+						util.Check(err)
+					} else {
+						issue, _, err = client.Issues.Get(ctx, repo.owner, repo.repo, id)
+						util.Check(err)
+						data, err := json.Marshal(issue)
+						util.Check(err)
+						err = diskCache.Write(key, data)
+						util.Check(err)
+					}
+
+					labels := map[string]bool{}
+					for _, l := range issue.Labels {
+						labels[*l.Name] = true
+					}
+					message := fmt.Sprintf("#%v %s", id, *issue.Title)
+					if labels["enhancement"] {
+						enhancements = append(enhancements, message)
+					} else if labels["bug"] {
+						bugFixes = append(bugFixes, message)
+					} else if issue.IsPullRequest() {
+						relatedIssues := findIssues(*issue.Body)
+						if len(relatedIssues) > 0 {
+							issues = append(issues, relatedIssues...)
+						} else {
+							pullRequests = append(pullRequests, message)
+						}
+					} else {
+						other = append(other, message)
+					}
+				}
+			}
+
 			if len(enhancements) > 0 {
 				fmt.Println("#### Enhancements")
 				fmt.Println()
+				sort.Strings(enhancements)
 				for _, i := range enhancements {
 					fmt.Printf("* %s\n", i)
 				}
@@ -126,6 +139,7 @@ func NewReleaseNoteCmd() *cobra.Command {
 			if len(bugFixes) > 0 {
 				fmt.Println("#### Bug Fixes")
 				fmt.Println()
+				sort.Strings(bugFixes)
 				for _, i := range bugFixes {
 					fmt.Printf("- %s\n", i)
 				}
@@ -134,6 +148,7 @@ func NewReleaseNoteCmd() *cobra.Command {
 			if len(other) > 0 {
 				fmt.Println("#### Other")
 				fmt.Println()
+				sort.Strings(other)
 				for _, i := range other {
 					fmt.Printf("- %s\n", i)
 				}
@@ -142,6 +157,7 @@ func NewReleaseNoteCmd() *cobra.Command {
 			if len(pullRequests) > 0 {
 				fmt.Println("#### Pull Requests")
 				fmt.Println()
+				sort.Strings(pullRequests)
 				for _, i := range pullRequests {
 					fmt.Printf("- %s\n", i)
 				}
@@ -156,14 +172,14 @@ func NewReleaseNoteCmd() *cobra.Command {
 	}
 
 	repo = gitHubRepo(cmd)
-	_ = cmd.MarkFlagRequired("commit")
+	cmd.Flags().Bool("cache", true, "Use a cache")
 
 	return cmd
 }
 
 func findIssues(message string) []int {
 	var issues []int
-	for _, text:= range regexp.MustCompile("#[0-9]+").FindAllString(message, 1) {
+	for _, text := range regexp.MustCompile("#[0-9]+").FindAllString(message, 1) {
 		id, err := strconv.Atoi(strings.TrimPrefix(text, "#"))
 		util.Check(err)
 		issues = append(issues, id)
