@@ -175,6 +175,7 @@ func NewReleaseNoteCmd() *cobra.Command {
 			for name := range contributors {
 				names = append(names, name)
 			}
+			sort.Strings(names)
 			for _, name := range names {
 				fmt.Printf("* %s <!-- num=%v -->\n", name, contributors[name])
 			}
