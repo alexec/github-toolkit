@@ -15,6 +15,7 @@ import (
 
 type GithubRepo struct {
 	accessToken string
+	host string
 	owner       string
 	repo        string
 }
@@ -24,10 +25,13 @@ func NewGithubRepo(url string) (repo GithubRepo) {
 
 	if strings.HasPrefix(url, "http") {
 		parts := strings.Split(url, "/")
+		repo.host = parts[2]
 		repo.owner = parts[3]
 		repo.repo = strings.Split(parts[4], ".")[0]
 	} else {
-		parts := strings.Split(strings.Split(url, ":")[1], "/")
+		parts := strings.Split(url, ":")
+		repo.host = strings.Split(parts[0], "@")[1]
+		parts = strings.Split(parts[1], "/")
 		repo.owner = parts[0]
 		repo.repo = strings.Split(parts[1], ".")[0]
 	}
