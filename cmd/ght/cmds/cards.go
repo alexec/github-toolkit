@@ -24,22 +24,20 @@ func NewCardsCmd() *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "cards",
 		Short: "Create printable Github cards",
-		Example: `
-		# enhancements backlog 
-		ght cards --label enhancement --exclude-label wontfix --milestone none 
-		
-		# bugs backlog
-		ght cards --label bug --exclude-label wontfix --milestone none 
-	
-		# help wanted backlog
-		ght cards --label 'help wanted' --exclude-label wontfix' --milestone none 
-	
-		# open issues in milestone v1.3
-		ght cards --milestone v1.3
-	
-		# issues opened in the last day
-		ght cards --state all --since 24h
-	`,
+		Example: `  # enhancements backlog 
+  ght cards --label enhancement --exclude-label wontfix --milestone none 
+  	
+  # bugs backlog
+  ght cards --label bug --exclude-label wontfix --milestone none 
+  	
+  # help wanted backlog
+  ght cards --label 'help wanted' --exclude-label wontfix' --milestone none 
+  	
+  # open issues in milestone v1.3
+  ght cards --milestone v1.3
+  	
+  # issues opened in the last day
+  ght cards --state all --since 24h`,
 		Run: func(cmd *cobra.Command, args []string) {
 			ctx, client := newClient(repo, cmd)
 
