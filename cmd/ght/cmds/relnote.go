@@ -171,8 +171,12 @@ func NewReleaseNoteCmd() *cobra.Command {
 			}
 			fmt.Println("#### Contributors")
 			fmt.Println()
-			for name, num := range contributors {
-				fmt.Printf("* %s <!-- num=%v -->\n", name, num)
+			var names []string
+			for name := range contributors {
+				names = append(names, name)
+			}
+			for _, name := range names {
+				fmt.Printf("* %s <!-- num=%v -->\n", name, contributors[name])
 			}
 		},
 	}
