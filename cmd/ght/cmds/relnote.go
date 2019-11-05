@@ -21,7 +21,7 @@ import (
 func NewReleaseNoteCmd() *cobra.Command {
 
 	var repo GithubRepo
-	var cache bool
+	cache := true
 
 	var cmd = &cobra.Command{
 		Use:   "relnote REVISION_RANGE",

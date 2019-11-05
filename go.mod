@@ -10,5 +10,6 @@ require (
 	github.com/peterbourgon/diskv v2.0.1+incompatible
 	github.com/spf13/cobra v0.0.5
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
+	google.golang.org/appengine v1.4.0
 	gopkg.in/go-playground/colors.v1 v1.2.0
 )
