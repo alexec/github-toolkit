@@ -181,7 +181,7 @@ func NewReleaseNoteCmd() *cobra.Command {
 		},
 	}
 
-	repo = gitHubRepo(cmd)
+	repo = gitHubRepo()
 	cmd.Flags().Bool("cache", true, "Use a cache")
 
 	return cmd

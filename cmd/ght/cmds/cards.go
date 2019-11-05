@@ -194,7 +194,7 @@ func NewCardsCmd() *cobra.Command {
 		FParseErrWhitelist:         cobra.FParseErrWhitelist{},
 	}
 
-	repo = gitHubRepo(cmd)
+	repo = gitHubRepo()
 
 	cmd.Flags().StringVar(&state, "state", "open", "Github issue state, 'all', 'open' or 'closed'")
 	cmd.Flags().StringArrayVar(&labels, "label", []string{}, "Github labels")

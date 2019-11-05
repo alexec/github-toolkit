@@ -2,6 +2,8 @@ package cmds
 
 import (
 	"context"
+	"fmt"
+	"net/url"
 	"os"
 	"os/exec"
 	"strings"
@@ -15,9 +17,21 @@ import (
 
 type GithubRepo struct {
 	accessToken string
-	host string
+	host        string
 	owner       string
 	repo        string
+}
+
+func (repo GithubRepo) BaseURL() *url.URL {
+	text := ""
+	if repo.host == "github.com" {
+		text = fmt.Sprintf("https://api.%v/", repo.host)
+	} else {
+		text = fmt.Sprintf("https://%s/api/v3/", repo.host)
+	}
+	u, err := url.Parse(text)
+	util.Check(err)
+	return u
 }
 
 func NewGithubRepo(url string) (repo GithubRepo) {
@@ -38,12 +52,8 @@ func NewGithubRepo(url string) (repo GithubRepo) {
 	return
 }
 
-func gitHubRepo(cmd *cobra.Command) GithubRepo {
-	repo := NewGithubRepo(repoUrl())
-	cmd.Flags().StringVar(&repo.accessToken, "access-token", repo.accessToken, "Github personal access token, create one at https://github.com/settings/tokens")
-	cmd.Flags().StringVar(&repo.owner, "owner", repo.owner, "Github owner (aka org)")
-	cmd.Flags().StringVar(&repo.repo, "repo", repo.repo, "Github repo")
-	return repo
+func gitHubRepo() GithubRepo {
+	return NewGithubRepo(repoUrl())
 }
 
 func repoUrl() string {
@@ -54,7 +64,7 @@ func repoUrl() string {
 }
 
 func newClient(repo GithubRepo, cmd *cobra.Command) (context.Context, *github.Client) {
-	if repo.accessToken == "" || repo.owner == "" || repo.repo == "" {
+	if repo.host == "" || repo.accessToken == "" || repo.owner == "" || repo.repo == "" {
 		_ = cmd.Usage()
 		os.Exit(1)
 	}
@@ -64,7 +74,6 @@ func newClient(repo GithubRepo, cmd *cobra.Command) (context.Context, *github.Cl
 	)
 	tc := oauth2.NewClient(ctx, ts)
 	client := github.NewClient(tc)
-	// TODO
-	// client.BaseURL
+	client.BaseURL = repo.BaseURL()
 	return ctx, client
 }
