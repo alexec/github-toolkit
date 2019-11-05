@@ -49,6 +49,7 @@ func NewReleaseNoteCmd() *cobra.Command {
 			util.Check(err)
 			var issues []int
 			contributors := map[string]int{}
+			var other []string
 			for _, sha := range strings.Split(string(output), "\n") {
 				if sha == "" {
 					continue
@@ -68,7 +69,12 @@ func NewReleaseNoteCmd() *cobra.Command {
 				// extract the issue and add to the note
 				message := strings.SplitN(commit.GetMessage(), "\n", 2)[0]
 
-				issues = append(issues, findIssues(message)...)
+				foundIssues := findIssues(message)
+				if len(foundIssues) == 0 {
+					other = append(other, message)
+				} else {
+					issues = append(issues, foundIssues...)
+				}
 				// add the author as a contributor
 				name := *commit.Author.Name
 				num, ok := contributors[name]
@@ -83,7 +89,6 @@ func NewReleaseNoteCmd() *cobra.Command {
 			var enhancements []string
 			var bugFixes []string
 			var pullRequests []string
-			var other []string
 			for ; len(issues) > 0; {
 				var id int
 				id, issues = issues[len(issues)-1], issues[:len(issues)-1]
