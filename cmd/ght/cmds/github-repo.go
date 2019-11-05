@@ -15,14 +15,14 @@ import (
 	"github.com/alexec/github-toolkit/cmd/ght/util"
 )
 
-type GithubRepo struct {
+type githubRepo struct {
 	accessToken string
 	host        string
 	owner       string
 	repo        string
 }
 
-func (repo GithubRepo) BaseURL() *url.URL {
+func (repo githubRepo) BaseURL() *url.URL {
 	text := ""
 	if repo.host == "github.com" {
 		text = fmt.Sprintf("https://api.%v/", repo.host)
@@ -34,7 +34,7 @@ func (repo GithubRepo) BaseURL() *url.URL {
 	return u
 }
 
-func NewGithubRepo(url string) (repo GithubRepo) {
+func newGithubRepo(url string) (repo githubRepo) {
 	repo.accessToken = os.Getenv("ACCESS_TOKEN")
 
 	if strings.HasPrefix(url, "http") {
@@ -52,8 +52,8 @@ func NewGithubRepo(url string) (repo GithubRepo) {
 	return
 }
 
-func gitHubRepo() GithubRepo {
-	return NewGithubRepo(repoUrl())
+func gitHubRepo() githubRepo {
+	return newGithubRepo(repoUrl())
 }
 
 func repoUrl() string {
@@ -63,7 +63,7 @@ func repoUrl() string {
 	return string(bytes)
 }
 
-func newClient(repo GithubRepo, cmd *cobra.Command) (context.Context, *github.Client) {
+func newClient(repo githubRepo, cmd *cobra.Command) (context.Context, *github.Client) {
 	if repo.host == "" || repo.accessToken == "" || repo.owner == "" || repo.repo == "" {
 		_ = cmd.Usage()
 		os.Exit(1)

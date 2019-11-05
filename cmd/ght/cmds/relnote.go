@@ -20,7 +20,7 @@ import (
 
 func NewReleaseNoteCmd() *cobra.Command {
 
-	var repo GithubRepo
+	var repo githubRepo
 	cache := true
 
 	var cmd = &cobra.Command{

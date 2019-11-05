@@ -14,7 +14,7 @@ import (
 
 func NewCardsCmd() *cobra.Command {
 
-	var repo GithubRepo
+	var repo githubRepo
 	var state string
 	var labels []string
 	var excludeLabels []string
