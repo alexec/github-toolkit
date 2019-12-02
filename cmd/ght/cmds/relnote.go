@@ -1,4 +1,4 @@
-package cmds;
+package cmds
 
 import (
 	"encoding/json"
@@ -25,11 +25,11 @@ func NewReleaseNoteCmd() *cobra.Command {
 
 	var cmd = &cobra.Command{
 		Use:   "relnote REVISION_RANGE",
-		Short: "Create release note based on Github issue.",
+		Short: "Create release note based on Github issues.",
 		Example: `  # Create the note:
-  ght relnote v1.3.0-rc3..v1.3.0-rc4`,
+  ACCESS_TOKEN=7eebf... ght relnote v1.3.0-rc3..v1.3.0-rc4`,
 		Run: func(cmd *cobra.Command, args []string) {
-			if len(args) == 0 {
+			if len(args) != 1 {
 				cmd.HelpFunc()(cmd, args)
 				os.Exit(1)
 			}
