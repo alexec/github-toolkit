@@ -15,6 +15,7 @@ func main() {
 		},
 	}
 	cmd.AddCommand(cmds.NewCardsCmd())
+	cmd.AddCommand(cmds.NewChangeLogCmd())
 	cmd.AddCommand(cmds.NewReleaseNoteCmd())
 	util.Check(cmd.Execute())
 }

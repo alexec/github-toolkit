@@ -116,17 +116,12 @@ func NewReleaseNoteCmd() *cobra.Command {
 						labels[*l.Name] = true
 					}
 					message := fmt.Sprintf("#%v %s", id, *issue.Title)
-					if labels["enhancement"] {
+					if issue.IsPullRequest() {
+						pullRequests = append(pullRequests, message)
+					} else if labels["enhancement"] {
 						enhancements = append(enhancements, message)
 					} else if labels["bug"] {
 						bugFixes = append(bugFixes, message)
-					} else if issue.IsPullRequest() {
-						relatedIssues := findIssues(*issue.Body)
-						if len(relatedIssues) > 0 {
-							issues = append(issues, relatedIssues...)
-						} else {
-							pullRequests = append(pullRequests, message)
-						}
 					} else {
 						other = append(other, message)
 					}
@@ -190,7 +185,7 @@ func NewReleaseNoteCmd() *cobra.Command {
 
 func findIssues(message string) []int {
 	var issues []int
-	for _, text := range regexp.MustCompile("#[0-9]+").FindAllString(message, 1) {
+	for _, text := range regexp.MustCompile("#[0-9]+").FindAllString(message, -1) {
 		id, err := strconv.Atoi(strings.TrimPrefix(text, "#"))
 		util.Check(err)
 		issues = append(issues, id)

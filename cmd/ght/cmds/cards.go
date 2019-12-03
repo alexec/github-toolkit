@@ -178,20 +178,6 @@ func NewCardsCmd() *cobra.Command {
 				panic("100 or more issues, we do not support pagination, so we do not support this number of issues")
 			}
 		},
-		RunE:                       nil,
-		PostRun:                    nil,
-		PostRunE:                   nil,
-		PersistentPostRun:          nil,
-		PersistentPostRunE:         nil,
-		SilenceErrors:              false,
-		SilenceUsage:               false,
-		DisableFlagParsing:         false,
-		DisableAutoGenTag:          false,
-		DisableFlagsInUseLine:      false,
-		DisableSuggestions:         false,
-		SuggestionsMinimumDistance: 0,
-		TraverseChildren:           false,
-		FParseErrWhitelist:         cobra.FParseErrWhitelist{},
 	}
 
 	repo = gitHubRepo()
