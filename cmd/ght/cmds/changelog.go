@@ -3,6 +3,7 @@ package cmds
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/google/go-github/v28/github"
 	"github.com/spf13/cobra"
@@ -36,7 +37,7 @@ func NewChangeLogCmd() *cobra.Command {
 				}
 				fmt.Printf("## %s (%v)\n", *release.Name, release.PublishedAt.Format("2006-01-02"))
 				fmt.Println()
-				fmt.Println(*release.Body)
+				fmt.Println(strings.TrimSpace(*release.Body))
 				fmt.Println()
 			}
 		},
